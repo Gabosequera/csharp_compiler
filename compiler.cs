@@ -4,6 +4,8 @@ public enum TokenType
 {
   Integer,
   Plus,
+  Minus,
+  Space,
   EOF
 }
 
@@ -11,9 +13,10 @@ public enum TokenType
 public class Token
 {
   public TokenType Type;
-  public char? Value;
+  //Change Value to string
+  public string? Value;
 
-  public Token(TokenType type, char? value)
+  public Token(TokenType type, string value)
   {
     Type = type;
     Value = value;
@@ -76,37 +79,61 @@ public class Interpreter
 
     //Current_chart = el caracter en la posicion que estemos
     char current_char = text[Pos];
-    
+    string current_string = current_char.ToString();
+    char? next_char = null;
+    try
+    {
+      next_char = text[Pos + 1];
+      // Console.WriteLine($"Current char: {current_char}, next_char: {next_char} ");
+    }
+    catch (System.Exception)
+    {
+      Console.WriteLine("There is no next_char index");
+    }
+
     //Si el current_char is digito: ->
     if (char.IsDigit(current_char))
     {
-      Token token = new Token(Integer, current_char);
+      if (next_char is char n && char.IsDigit(n))
+      {
+        string multi_digit = current_char.ToString() + next_char.ToString();
+        Pos += multi_digit.Length;
+        return new Token(Integer, multi_digit);
+      }
+
       Pos += 1;
-      return token;
+      return new Token(Integer, current_string);
     }
     //Si el current_char is "+": ->
-if (current_char == '+')
+    if (current_char == '+')
     {
-      Token token = new Token(Plus, current_char);
       Pos += 1;
-      return token;
+      return new Token(Plus, current_string);
+    }
+    if (current_char == '-')
+    {
+      Pos += 1;
+      return new Token(Minus, current_string);
     }
 
     error();
     return null;
   }
 
+
   public void eat(TokenType token_type)
   {
+    Console.WriteLine($"Eat(): BEFORE IF>> {Current_Token.Type}, {Current_Token.Value}");
     //If curren_state type (Integer, Plus, EOF) == token_type (Integer, Plus, EOF)
     if (Current_Token.Type == token_type)
     {
       //Current_Token changes to the next token
       Current_Token = get_next_token();
+      Console.WriteLine($"Eat(): INSIDE IF AFTER get_next_token>> {Current_Token.Type}, {Current_Token.Value}");
     }
     else
     {
-      Console.WriteLine("Linea 100, Public void eat, else loop");
+      Console.WriteLine("Linea 118, Public void eat, else loop");
       new PrintError(Current_Token, token_type).print_error(Current_Token, token_type);
       error();
     }
@@ -122,15 +149,31 @@ if (current_char == '+')
     eat(Integer);
 
     Token op = Current_Token;
-    eat(Plus);
+    eat(Current_Token.Type);
 
     Token right = Current_Token;
     eat(Integer);
 
-    int? int_left = left.Value - '0';
-    int? int_right = right.Value - '0';
-    int? result = int_left + int_right;
-    return result;
+    //Now Value is a string not a char
+    // int? int_left = left.Value - '0';
+    // int? int_right = right.Value - '0';
+    // int? result = left.IntValue + right.IntValue;
+
+    //Converts string to int
+    int? int_left = int.Parse(left.Value);
+    int? int_right = int.Parse(right.Value);
+
+    Console.WriteLine($"Expr>> op: {op.Type}");
+    if (op.Type == TokenType.Plus)
+    {
+      return int_left + int_right;
+    }
+    if (op.Type == TokenType.Minus)
+    {
+      return int_left - int_right;
+    }
+    error();
+    return null;
   }
 }
 
@@ -158,3 +201,4 @@ public class Program
       }
   }  
 }
+
