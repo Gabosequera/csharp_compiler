@@ -1,0 +1,7 @@
+# Build output del dotnet SDK. Se regeneran solos al `dotnet build`.
+bin/
+obj/
+
+# Cache de Roslyn/omnisharp (analyzer cache, etc.)
+.vs/
+*.user

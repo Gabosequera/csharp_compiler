@@ -91,6 +91,12 @@ public class Interpreter
       Console.WriteLine("There is no next_char index");
     }
 
+
+    if (current_char == ' ')
+    {
+      Pos += 1;
+      return new Token(Space, current_string);
+    }
     //Si el current_char is digito: ->
     if (char.IsDigit(current_char))
     {
@@ -123,6 +129,10 @@ public class Interpreter
 
   public void eat(TokenType token_type)
   {
+    if (Current_Token.Type == TokenType.Space)
+    {
+      Current_Token = get_next_token();
+    }
     Console.WriteLine($"Eat(): BEFORE IF>> {Current_Token.Type}, {Current_Token.Value}");
     //If curren_state type (Integer, Plus, EOF) == token_type (Integer, Plus, EOF)
     if (Current_Token.Type == token_type)

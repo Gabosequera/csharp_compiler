@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Compiler</RootNamespace>
+    <!-- Auto-importa System, System.IO, System.Linq, etc. asi no
+         tenes que poner `using System;` en cada .cs. -->
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!-- ============================================================
+       VERSIONES VIEJAS DEL COMPILER
+       Cada archivo .cs que NO sea la version activa va aca como
+       <Compile Remove="..." /> + <None Include="..." />.
+         - Compile Remove: lo saca del build (evita Main duplicado)
+         - None Include:   lo deja visible para omnisharp/Neo-tree
+       Para "activar" otra version: mover la activa actual aca
+       y sacar de aca la que quieras compilar.
+       ============================================================ -->
+  <ItemGroup>
+    <Compile Remove="compiler.cs" />
+    <None Include="compiler.cs" />
+  </ItemGroup>
+
+</Project>

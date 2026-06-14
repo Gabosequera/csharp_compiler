@@ -9,11 +9,9 @@ public enum TokenType
   EOF
 }
 
-
 public class Token
 {
   public TokenType Type;
-  //Change Value to string
   public string? Value;
 
   public Token(TokenType type, string value)
@@ -28,12 +26,18 @@ public class Interpreter
   private string Text; //Declare text for the whole class
   private int Pos;
   private Token? Current_Token;
+  private char Current_char;
+  private bool eof;
 
   public Interpreter(string text) //Constructor parameters
- {
+  {
     Text = text; //Saves the Constructor parameter into the string text
     Pos = 0;
     Current_Token = null;
+    //Current_chart = el caracter en la posicion que estemos
+    Current_char = Text[Pos]; //Por default 0, primer caracter del input
+    eof = false;
+
   }
 
   public class PrintError
@@ -68,68 +72,83 @@ public class Interpreter
     throw new InvalidOperationException("Invalid operation"); 
   }
 
+  public void advance()
+  {
+    //Abstract the "advance pos pointer to set the current_char" logic into a function
+    Pos += 1;
+    if (Pos > Text.Length - 1)
+    {
+      eof = true;
+      // Current_char = TokenType.EOF; //Indicates the end of the input string
+    }
+    else
+    {
+      Current_char = Text[Pos];
+    }
+  }
+
+  public void skip_whitespace()
+  {
+    // while self.current_char is not None and self.current_char.isspace():
+    while (eof != true && char.IsWhiteSpace(Current_char))
+    {
+      advance();
+    }
+  }
+
+  public string integer()
+  {
+    string result = "";
+    //while (Current_char is not null && char?.IsDigit(Current_char))
+    while (eof != true && char.IsDigit(Current_char))
+    {
+      result += Current_char;
+      advance();
+    }
+    return result;
+  }
+
   public Token get_next_token()
   {
-    string text = Text;
-
-    if (Pos > text.Length - 1)
+    while (eof != true)
     {
-      return new Token(EOF, null);
-    }
-
-    //Current_chart = el caracter en la posicion que estemos
-    char current_char = text[Pos];
-    string current_string = current_char.ToString();
-    char? next_char = null;
-    try
-    {
-      next_char = text[Pos + 1];
-      // Console.WriteLine($"Current char: {current_char}, next_char: {next_char} ");
-    }
-    catch (System.Exception)
-    {
-      Console.WriteLine("There is no next_char index");
-    }
-
-    //Si el current_char is digito: ->
-    if (char.IsDigit(current_char))
-    {
-      if (next_char is char n && char.IsDigit(n))
+      if (char.IsWhiteSpace(Current_char))
       {
-        string multi_digit = current_char.ToString() + next_char.ToString();
-        Pos += multi_digit.Length;
-        return new Token(Integer, multi_digit);
+        skip_whitespace();
+        continue;
       }
-
-      Pos += 1;
-      return new Token(Integer, current_string);
+      if (char.IsDigit(Current_char))
+      {
+        return new Token(Integer, integer());
+      }
+      
+      if (Current_char == '+')
+      {
+        advance();
+        return new Token(Plus, Current_char.ToString());
+      }
+      if (Current_char == '-')
+      {
+        advance();
+        return new Token(Minus, Current_char.ToString());
+      }
+      error();
     }
-    //Si el current_char is "+": ->
-    if (current_char == '+')
-    {
-      Pos += 1;
-      return new Token(Plus, current_string);
-    }
-    if (current_char == '-')
-    {
-      Pos += 1;
-      return new Token(Minus, current_string);
-    }
-
-    error();
-    return null;
+    // Console.WriteLine("Next token se esta quedando atrapado fuera del while con return EOF, null");
+    return new Token(EOF, null);
   }
 
 
   public void eat(TokenType token_type)
   {
-    Console.WriteLine($"Eat(): BEFORE IF>> {Current_Token.Type}, {Current_Token.Value}");
+    // Console.WriteLine($"Eat(): BEFORE IF>> {Current_Token.Type}, {Current_Token.Value}");
     //If curren_state type (Integer, Plus, EOF) == token_type (Integer, Plus, EOF)
     if (Current_Token.Type == token_type)
     {
+      // Console.WriteLine($"Eat(): INSIDE IF BEFORE>> {Current_Token.Type}, {Current_Token.Value}");
       //Current_Token changes to the next token
       Current_Token = get_next_token();
-      Console.WriteLine($"Eat(): INSIDE IF AFTER get_next_token>> {Current_Token.Type}, {Current_Token.Value}");
+      // Console.WriteLine($"Eat(): INSIDE IF AFTER get_next_token>> {Current_Token.Type}, {Current_Token.Value}");
     }
     else
     {
